@@ -1,42 +1,37 @@
-from fastembed import TextEmbedding
-import numpy as np
-from typing import List, Union
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from typing import List
 from app.config import get_settings
 import asyncio
 
 settings = get_settings()
 
 class EmbeddingService:
-    """Service for generating embeddings using FastEmbed (ONNX/Serverless optimized)."""
+    """Service for generating embeddings using HuggingFace Inference API (Serverless)."""
     
     def __init__(self):
-        self.model = None
-        self._load_model()
+        self.client = None
+        self._initialize_client()
     
-    def _load_model(self):
-        """Load the embedding model."""
-        if self.model is None:
-            # fastembed automatically downloads/caches the model efficiently
-            # We use /tmp because Vercel/Render serverless have read-only filesystems
-            self.model = TextEmbedding(
-                model_name=settings.embedding_model,
-                cache_dir="/tmp/fastembed_cache"
+    def _initialize_client(self):
+        """Initialize the HuggingFace endpoint client."""
+        if self.client is None:
+            # This uses the hosted API instead of local RAM/CPU
+            self.client = HuggingFaceEndpointEmbeddings(
+                model="sentence-transformers/all-MiniLM-L6-v2",
+                task="feature-extraction",
+                huggingfacehub_api_token=settings.huggingfacehub_api_token
             )
-    
-    def _generate_sync(self, texts: List[str]) -> List[List[float]]:
-        """Synchronous embedding generation using FastEmbed."""
-        # fastembed.embed(documents) returns a generator of numpy arrays
-        embeddings_generator = self.model.embed(texts)
-        return [embedding.tolist() for embedding in embeddings_generator]
     
     async def embed_query(self, query: str) -> List[float]:
         """Generate embedding for a single query (Async)."""
-        embeddings = await asyncio.to_thread(self._generate_sync, [query])
-        return embeddings[0]
+        # LangChain's embed_query is synchronous, so we offload to thread
+        return await asyncio.to_thread(self.client.embed_query, query)
     
     async def embed_documents(self, documents: List[str]) -> List[List[float]]:
         """Generate embeddings for multiple documents (Async)."""
-        return await asyncio.to_thread(self._generate_sync, documents)
+        # LangChain's embed_documents is synchronous, so we offload to thread
+        return await asyncio.to_thread(self.client.embed_documents, documents)
+
 
 
 # Global embedding service instance

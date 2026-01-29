@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     # Groq Configuration
     groq_api_key: str
     
+    # HuggingFace Configuration (for Serverless/Vercel)
+    huggingfacehub_api_token: str = ""
+    
     # Application Settings
     chunk_size: int = 1000
     chunk_overlap: int = 200
