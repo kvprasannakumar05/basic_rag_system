@@ -1,16 +1,13 @@
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 import numpy as np
 from typing import List, Union
-from functools import lru_cache
 from app.config import get_settings
-
 import asyncio
 
 settings = get_settings()
 
-
 class EmbeddingService:
-    """Service for generating embeddings using Sentence Transformers."""
+    """Service for generating embeddings using FastEmbed (ONNX/Serverless optimized)."""
     
     def __init__(self):
         self.model = None
@@ -19,39 +16,23 @@ class EmbeddingService:
     def _load_model(self):
         """Load the embedding model."""
         if self.model is None:
-            self.model = SentenceTransformer(settings.embedding_model)
+            # fastembed automatically downloads/caches the model efficiently
+            self.model = TextEmbedding(model_name=settings.embedding_model)
     
-    def generate_embeddings(self, texts: Union[str, List[str]]) -> np.ndarray:
-        """
-        Generate embeddings for one or more texts.
-        """
-        if isinstance(texts, str):
-            texts = [texts]
-        
-        # Generate embeddings - this is CPU bound
-        embeddings = self.model.encode(
-            texts,
-            normalize_embeddings=True,
-            show_progress_bar=False
-        )
-        
-        return embeddings
+    def _generate_sync(self, texts: List[str]) -> List[List[float]]:
+        """Synchronous embedding generation using FastEmbed."""
+        # fastembed.embed(documents) returns a generator of numpy arrays
+        embeddings_generator = self.model.embed(texts)
+        return [embedding.tolist() for embedding in embeddings_generator]
     
     async def embed_query(self, query: str) -> List[float]:
-        """
-        Generate embedding for a single query (Async).
-        """
-        # Offload CPU bound task to thread pool
-        embedding = await asyncio.to_thread(self.generate_embeddings, query)
-        return embedding[0].tolist()
+        """Generate embedding for a single query (Async)."""
+        embeddings = await asyncio.to_thread(self._generate_sync, [query])
+        return embeddings[0]
     
     async def embed_documents(self, documents: List[str]) -> List[List[float]]:
-        """
-        Generate embeddings for multiple documents (Async).
-        """
-        # Offload CPU bound task to thread pool
-        embeddings = await asyncio.to_thread(self.generate_embeddings, documents)
-        return embeddings.tolist()
+        """Generate embeddings for multiple documents (Async)."""
+        return await asyncio.to_thread(self._generate_sync, documents)
 
 
 # Global embedding service instance
