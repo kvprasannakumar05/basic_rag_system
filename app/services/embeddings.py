@@ -17,7 +17,11 @@ class EmbeddingService:
         """Load the embedding model."""
         if self.model is None:
             # fastembed automatically downloads/caches the model efficiently
-            self.model = TextEmbedding(model_name=settings.embedding_model)
+            # We use /tmp because Vercel/Render serverless have read-only filesystems
+            self.model = TextEmbedding(
+                model_name=settings.embedding_model,
+                cache_dir="/tmp/fastembed_cache"
+            )
     
     def _generate_sync(self, texts: List[str]) -> List[List[float]]:
         """Synchronous embedding generation using FastEmbed."""
