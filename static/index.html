@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Minimal Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-text">
+                    <h1>RAG Intelligence / QA</h1>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot active"></div>
+                <span>System Operational</span>
+            </div>
+        </header>
+
+        <!-- Two Column Layout -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <div class="sidebar">
+                <!-- Upload -->
+                <div class="card">
+                    <h2>Knowledge Base</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".pdf,.txt" hidden>
+                        <p class="upload-text">
+                            Drop files or <span class="browse-link" id="browseLink">Select</span>
+                        </p>
+                        <p class="upload-hint">PDF / TXT — MAX 10MB</p>
+                    </div>
+                    <div class="upload-status" id="uploadStatus"></div>
+                </div>
+
+                <!-- Documents List -->
+                <div class="card" style="border-top: none;">
+                    <div class="documents-header">
+                        <h2>Index</h2>
+                        <button class="refresh-btn" id="refreshBtn">REFRESH</button>
+                    </div>
+                    <div class="documents-list" id="documentsList">
+                        <div style="font-size: 12px; color: #444; text-align: center;">No documents indexed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Chat Area -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h2>Terminal</h2>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-history" id="chatHistory">
+                        <div class="message bot">
+                            <div class="message-content">
+                                System initialized. Ready for queries.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                        <span class="typing-text">Processing</span>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <div class="input-wrapper">
+                            <textarea id="chatInput" placeholder="Enter query..." rows="1"></textarea>
+                            <button class="send-btn" id="sendBtn">
+                                <span>→</span>
+                            </button>
+                        </div>
+                        <div class="input-hint">
+                            RETURN to send · SHIFT + RETURN for new line
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Loading Overlay (Managed by JS, minimal style) -->
+    <div class="loading-overlay" id="loadingOverlay"
+        style="display: none; position: fixed; bottom: 24px; right: 24px; background: #000; border: 1px solid #333; padding: 8px 16px; color: #fff; font-size: 12px;">
+        <p class="loading-text" id="loadingText">Processing...</p>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
